@@ -25,13 +25,23 @@
 # SOFTWARE.
 
 set( CMAKE_LEGACY_CYGWIN_WIN32 0 )
-project( openssl )
+project( openssl
+  DESCRIPTION "OpenSSL" )
 cmake_minimum_required( VERSION 3.1.0 )
+
+option( OPENSSL_WITH_SHARED_LIBRARIES "Build shared version of the libcrypto/libssl libraries." OFF )
+option( OPENSSL_WITH_SHARED_ZLIB "Build OpenSSL with shared version of Zlib." OFF )
+option( OPENSSL_WITH_ZLIB "Build OpenSSL with Zlib." OFF )
+
+set( BUILD_SHARED_LIBS ${OPENSSL_WITH_SHARED_LIBRARIES} )
+if( OPENSSL_WITH_SHARED_ZLIB )
+  set( OPENSSL_WITH_ZLIB ON )
+endif()
 
 set( CMAKE_DISABLE_SOURCE_CHANGES ON )
 set( CMAKE_DISABLE_IN_SOURCE_BUILD ON )
 
-set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
+list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
 
 option( WITH_APPS "Build applications" ON )
 
@@ -106,8 +116,8 @@ add_definitions( -DOPENSSL_NO_STATIC_ENGINE )
 if( MSVC )
   include( MSVCRuntime )
   configure_msvc_runtime()
-  set( OPENSSLDIR "C:/ssl" )
-  set( ENGINESDIR "C:/engines-1.1" )
+  set( OPENSSLDIR "C:/ProgramData/openssl/ssl" )
+  set( ENGINESDIR "C:/ProgramData/openssl/engines-1.1" )
 else()
   set( OPENSSLDIR "${CMAKE_INSTALL_PREFIX}/ssl" )
   set( ENGINESDIR "${CMAKE_INSTALL_PREFIX}/engines-1.1" )
@@ -163,7 +173,6 @@ file( COPY ${PROJECT_SOURCE_DIR}/include/openssl DESTINATION include )
 
 file( READ ${PROJECT_SOURCE_DIR}/opensslconf.h.cmake CONF )
 set( CONF "
-#define OPENSSL_NO_MD2
 #define OPENSSL_NO_RC5
 #define OPENSSL_NO_RFC3779
 #define OPENSSL_NO_EC_NISTP_64_GCC_128

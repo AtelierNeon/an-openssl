@@ -188,6 +188,8 @@ add_submodule ( kdf hkdf.c kdf_err.c scrypt.c tls1_prf.c )
 
 add_submodule ( lhash lh_stats.c lhash.c )
 
+add_submodule ( md2 md2_dgst.c md2_one.c )
+
 add_submodule ( md4 md4_dgst.c md4_one.c )
 
 add_submodule ( md5 md5_dgst.c md5_one.c )
@@ -278,12 +280,26 @@ else()
   add_submodule ( . threads_pthread.c )
 endif()
 
+if( WIN32 )
+  include( Windows-MyDllVersion )
+  generate_product_dll_version( OPENSSL_CRYPTO_VERSION_FILES
+    NAME "libcrypto - OpenSSL cryptographic library"
+    BUNDLE "${PROJECT_DESCRIPTION}"
+    VERSION_MAJOR ${OPENSSL_VERSION_MAJOR}
+    VERSION_MINOR ${OPENSSL_VERSION_MINOR}
+    VERSION_PATCH ${OPENSSL_VERSION_FIX}
+    VERSION_REVISION ${MY_REVISION}
+    ORIGINAL_FILENAME "libcrypto-1_1.dll"
+  )
+  set( LIBSRC ${LIBSRC} ${OPENSSL_CRYPTO_VERSION_FILES} )
+endif()
+
 add_library( crypto ${LIBSRC} ${OBJECTS_SRC} )
 
 target_include_directories( crypto PUBLIC ${PROJECT_BINARY_DIR}/include )
 
 if( WIN32 AND NOT CYGWIN )
-  target_link_libraries( crypto ws2_32 crypt32 )
+  target_link_libraries( crypto ws2_32 crypt32 advapi32 )
 else()
   if( Threads_FOUND )
     target_link_libraries( crypto ${CMAKE_THREAD_LIBS_INIT} )
@@ -302,7 +318,7 @@ endif()
 
 if( MSVC )
   if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    set_target_properties( crypto PROPERTIES OUTPUT_NAME "crypto-1_1-x64" )
+    set_target_properties( crypto PROPERTIES OUTPUT_NAME "crypto-1_1" )
   elseif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
     set_target_properties( crypto PROPERTIES OUTPUT_NAME "crypto-1_1" )
   endif()
