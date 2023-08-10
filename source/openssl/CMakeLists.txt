@@ -177,6 +177,11 @@ set( CONF "
 #define OPENSSL_NO_RFC3779
 #define OPENSSL_NO_EC_NISTP_64_GCC_128
 ${CONF}" )
+if( OPENSSL_WITH_ZLIB )
+set( CONF "
+#define ZLIB
+${CONF}" )
+endif()
 file( WRITE ${PROJECT_BINARY_DIR}/opensslconf.h.cmake "${CONF}" )
 
 configure_file( ${PROJECT_BINARY_DIR}/opensslconf.h.cmake

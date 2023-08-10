@@ -67,6 +67,12 @@ include_directories( BEFORE SYSTEM
   ${PROJECT_BINARY_DIR}/include # public|crypto|internal
   ${PROJECT_SOURCE_DIR}/ # e_os.h
 )
+if( OPENSSL_WITH_ZLIB )
+  include_directories(
+    ${PROJECT_SOURCE_DIR}/../zlib/
+    ${PROJECT_BINARY_DIR}/../zlib/
+  )
+endif()
 
 if( BUILD_SHARED_LIBS )
   add_definitions( -DOPENSSL_BUILD_SHLIBCRYPTO )
@@ -306,6 +312,14 @@ else()
   endif()
   if( DSO_DLFCN AND HAVE_DLFCN_H )
     target_link_libraries( crypto dl )
+  endif()
+endif()
+
+if( OPENSSL_WITH_ZLIB )
+  if( OPENSSL_WITH_SHARED_ZLIB )
+    target_link_libraries( crypto zlib )
+  else()
+    target_link_libraries( crypto zlibstatic )
   endif()
 endif()
 
