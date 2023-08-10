@@ -21,9 +21,6 @@ extern "C" {
  * OpenSSL was configured with the following options:
  */
 
-#ifndef OPENSSL_NO_RC5
-# define OPENSSL_NO_RC5
-#endif
 #ifndef OPENSSL_THREADS
 # define OPENSSL_THREADS
 #endif

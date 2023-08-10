@@ -178,7 +178,6 @@ file( COPY ${PROJECT_SOURCE_DIR}/include/openssl DESTINATION include )
 
 file( READ ${PROJECT_SOURCE_DIR}/opensslconf.h.cmake CONF )
 set( CONF "
-#define OPENSSL_NO_RC5
 #define OPENSSL_NO_RFC3779
 #define OPENSSL_NO_EC_NISTP_64_GCC_128
 ${CONF}" )
