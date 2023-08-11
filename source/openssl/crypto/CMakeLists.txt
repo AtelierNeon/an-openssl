@@ -116,7 +116,7 @@ add_submodule ( async async.c async_err.c async_wait.c
 
 add_submodule ( bf bf_cfb64.c bf_ecb.c bf_enc.c bf_ofb64.c bf_skey.c )
 
-add_submodule ( bio b_addr.c b_dump.c b_print.c b_sock.c b_sock2.c bf_buff.c #bf_lbuf.c
+add_submodule ( bio b_addr.c b_dump.c b_print.c b_sock.c b_sock2.c bf_buff.c bf_lbuf.c
   bf_nbio.c bf_null.c bio_cb.c bio_err.c bio_lib.c bio_meth.c bss_acpt.c bss_bio.c
   bss_conn.c bss_dgram.c bss_fd.c bss_file.c bss_log.c bss_mem.c bss_null.c bss_sock.c )
 
