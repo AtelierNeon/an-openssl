@@ -44,8 +44,10 @@ rem !POWERSHELL! -ExecutionPolicy Unrestricted -File .\%POWERSHELL_SCRIPT% -Conf
 if "!ERRORLEVEL!" neq "0" (
     echo [Windows] Something wrong in running %POWERSHELL_SCRIPT%.
     echo [Windows] Aborting ...
+    exit /b 3
 ) else (
     echo [Windows] Done ...
 )
+
 rem End delaying variable expansion
 endlocal
