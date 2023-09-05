@@ -84,8 +84,8 @@ fi
 
 
 ## Print build information
-echo "[$SYSTEM_PLATFORM] Project information: revision:" $PROJECT_REVISION
-echo "[$SYSTEM_PLATFORM] Project information: release type:" $PROJECT_RELEASE_TYPE
+echo "[$SYSTEM_PLATFORM] Project information: revision: $PROJECT_REVISION"
+echo "[$SYSTEM_PLATFORM] Project information: release type: $PROJECT_RELEASE_TYPE"
 echo "[$SYSTEM_PLATFORM] Project information: Disable clean build: $PROJECT_SHOULD_DISABLE_CLEAN_BUILD"
 echo "[$SYSTEM_PLATFORM] Project information: OpenSSL with disabled apps: $PROJECT_OPENSSL_WITH_DISABLED_APPS"
 echo "[$SYSTEM_PLATFORM] Project information: OpenSSL with shared libraries: $PROJECT_OPENSSL_WITH_SHARED_LIBRARIES"
