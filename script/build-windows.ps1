@@ -38,6 +38,7 @@ $ProjectWithStaticVcrt = if ($Env:MY_PROJECT_WITH_STATIC_VCRT) {$Env:MY_PROJECT_
 $ProjectWithWorkaroundArm64rt = if ($Env:MY_PROJECT_WITH_WORKAROUND_ARM64RT) {$Env:MY_PROJECT_WITH_WORKAROUND_ARM64RT} else {'OFF'}
 $ProjectWithWorkaroundOptGy = if ($Env:MY_PROJECT_WITH_WORKAROUND_OPT_GY) {$Env:MY_PROJECT_WITH_WORKAROUND_OPT_GY} else {'OFF'}
 $ProjectWithWorkaroundSpectre = if ($Env:MY_PROJECT_WITH_WORKAROUND_SPECTRE) {$Env:MY_PROJECT_WITH_WORKAROUND_SPECTRE} else {'OFF'}
+$ProjectOpenSslWithDeprecatedCiphers = if ($Env:MY_PROJECT_OPENSSL_WITH_DEPRECATED_CIPHERS) {$Env:MY_PROJECT_OPENSSL_WITH_DEPRECATED_CIPHERS} else {'OFF'}
 $ProjectOpenSslWithDisabledApps = if ($Env:MY_PROJECT_OPENSSL_WITH_DISABLED_APPS) {$Env:MY_PROJECT_OPENSSL_WITH_DISABLED_APPS} else {'OFF'}
 $ProjectOpenSslWithSharedLibraries = if ($Env:MY_PROJECT_OPENSSL_WITH_SHARED_LIBRARIES) {$Env:MY_PROJECT_OPENSSL_WITH_SHARED_LIBRARIES} else {'OFF'}
 $ProjectOpenSslWithSharedZlib = if ($Env:MY_PROJECT_OPENSSL_WITH_SHARED_ZLIB) {$Env:MY_PROJECT_OPENSSL_WITH_SHARED_ZLIB} else {'OFF'}
@@ -52,6 +53,9 @@ $MyCmakeCommonArgumentList = @(
         "-T $ProjectToolset",
         "-DMY_REVISION=$ProjectRevision"
 )
+if ('ON'.Equals($ProjectOpenSslWithDeprecatedCiphers)) {
+    $MyCmakeCommonArgumentList += "-DOPENSSL_WITH_DEPRECATED_CIPHERS=$ProjectOpenSslWithDeprecatedCiphers"
+}
 if ('ON'.Equals($ProjectOpenSslWithDisabledApps)) {
     $MyCmakeCommonArgumentList += "-DOPENSSL_WITH_DISABLED_APPS=$ProjectOpenSslWithDisabledApps"
 }
@@ -135,6 +139,7 @@ Write-Information "[PowerShell] Project information: Disable clean build: $Proje
 Write-Information "[PowerShell] Project information: CMake generator: `"$MyCmakeGenerator`""
 Write-Information "[PowerShell] Project information: CMake toolset: `"$ProjectToolset`""
 Write-Information "[PowerShell] Project information: CMake platform to build: $MyCmakePlatformToBuildListString"
+Write-Information "[PowerShell] Project information: OpenSSL with deprecated ciphers: $ProjectOpenSslWithDeprecatedCiphers"
 Write-Information "[PowerShell] Project information: OpenSSL with disabled apps: $ProjectOpenSslWithDisabledApps"
 Write-Information "[PowerShell] Project information: OpenSSL with shared libraries: $ProjectOpenSslWithSharedLibraries"
 Write-Information "[PowerShell] Project information: OpenSSL with shared Zlib: $ProjectOpenSslWithSharedZlib"
