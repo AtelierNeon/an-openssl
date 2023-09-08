@@ -47,66 +47,31 @@ if( OPENSSL_WITH_DISABLED_APPS )
   set( WITH_APPS OFF )
 endif()
 
-# OpenSSL version detection imported from FindOpenSSL.cmake
+# OpenSSL version detection
 
-file( STRINGS "${PROJECT_SOURCE_DIR}/include/openssl/opensslv.h" openssl_version_str
-  REGEX "^#[\t ]*define[\t ]+OPENSSL_VERSION_NUMBER[\t ]+0x([0-9a-fA-F])+.*" )
+file( STRINGS "${PROJECT_SOURCE_DIR}/VERSION.dat" openssl_version_major
+  REGEX "^MAJOR=([0-9])+" )
+file( STRINGS "${PROJECT_SOURCE_DIR}/VERSION.dat" openssl_version_minor
+  REGEX "^MINOR=([0-9])+" )
+file( STRINGS "${PROJECT_SOURCE_DIR}/VERSION.dat" openssl_version_patch
+  REGEX "^PATCH=([0-9])+" )
+file( STRINGS "${PROJECT_SOURCE_DIR}/VERSION.dat" openssl_release_date
+  REGEX "^RELEASE_DATE=.+")
 
-function(from_hex HEX DEC)
-  string( TOUPPER "${HEX}" HEX )
-  set( _res 0 )
-  string( LENGTH "${HEX}" _strlen )
+string( REPLACE "MAJOR=" "" OPENSSL_VERSION_MAJOR ${openssl_version_major} )
+string( REPLACE "MINOR=" "" OPENSSL_VERSION_MINOR ${openssl_version_minor} )
+string( REPLACE "PATCH=" "" OPENSSL_VERSION_PATCH ${openssl_version_patch} )
+string( REPLACE "RELEASE_DATE=" "" OPENSSL_RELEASE_DATE ${openssl_release_date} )
+string( REPLACE "\"" "" OPENSSL_RELEASE_DATE ${OPENSSL_RELEASE_DATE} )
 
-  while( _strlen GREATER 0 )
-    math( EXPR _res "${_res} * 16" )
-    string( SUBSTRING "${HEX}" 0 1 NIBBLE )
-    string( SUBSTRING "${HEX}" 1 -1 HEX )
-    if( NIBBLE STREQUAL "A" )
-      math( EXPR _res "${_res} + 10" )
-    elseif( NIBBLE STREQUAL "B" )
-      math( EXPR _res "${_res} + 11" )
-    elseif( NIBBLE STREQUAL "C" )
-      math( EXPR _res "${_res} + 12" )
-    elseif( NIBBLE STREQUAL "D" )
-      math( EXPR _res "${_res} + 13" )
-    elseif( NIBBLE STREQUAL "E" )
-      math( EXPR _res "${_res} + 14" )
-    elseif( NIBBLE STREQUAL "F" )
-      math( EXPR _res "${_res} + 15" )
-    else()
-      math( EXPR _res "${_res} + ${NIBBLE}" )
-    endif()
-
-    string( LENGTH "${HEX}" _strlen )
-  endwhile()
-
-  set( ${DEC} ${_res} PARENT_SCOPE )
-endfunction()
-
-string( REGEX REPLACE "^.*OPENSSL_VERSION_NUMBER[\t ]+0x([0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F]).*$"
-  "\\1;\\2;\\3;\\4;\\5" OPENSSL_VERSION_LIST "${openssl_version_str}" )
-  list( GET OPENSSL_VERSION_LIST 0 OPENSSL_VERSION_MAJOR )
-  list( GET OPENSSL_VERSION_LIST 1 OPENSSL_VERSION_MINOR )
-  from_hex( "${OPENSSL_VERSION_MINOR}" OPENSSL_VERSION_MINOR )
-  list( GET OPENSSL_VERSION_LIST 2 OPENSSL_VERSION_FIX )
-  from_hex( "${OPENSSL_VERSION_FIX}" OPENSSL_VERSION_FIX )
-  list( GET OPENSSL_VERSION_LIST 3 OPENSSL_VERSION_PATCH )
-
-if( NOT OPENSSL_VERSION_PATCH STREQUAL "00" )
-  from_hex( "${OPENSSL_VERSION_PATCH}" _tmp )
-  # 96 is the ASCII code of 'a' minus 1
-  math( EXPR OPENSSL_VERSION_PATCH_ASCII "${_tmp} + 96" )
-  unset( _tmp )
-  string( ASCII "${OPENSSL_VERSION_PATCH_ASCII}" OPENSSL_VERSION_PATCH_STRING )
-endif()
-
-set( OPENSSL_VERSION "${OPENSSL_VERSION_MAJOR}.${OPENSSL_VERSION_MINOR}.${OPENSSL_VERSION_FIX}${OPENSSL_VERSION_PATCH_STRING}" )
+set( OPENSSL_VERSION "${OPENSSL_VERSION_MAJOR}.${OPENSSL_VERSION_MINOR}.${OPENSSL_VERSION_PATCH}" )
 
 message( STATUS "OpenSSL version ${OPENSSL_VERSION}" )
 
 set( VERSION_MAJOR ${OPENSSL_VERSION_MAJOR} )
 set( VERSION_MINOR ${OPENSSL_VERSION_MINOR} )
-set( VERSION_PATCH ${OPENSSL_VERSION_FIX} )
+set( VERSION_PATCH ${OPENSSL_VERSION_PATCH} )
+set( RELEASE_DATE ${OPENSSL_RELEASE_DATE} )
 
 set( VERSION_STRING ${OPENSSL_VERSION} )
 set( LIB_VERSION ${VERSION_MAJOR}.${VERSION_MINOR} )
@@ -130,18 +95,16 @@ if( MSVC )
   include( MSVCRuntime )
   configure_msvc_runtime()
   set( OPENSSLDIR "C:/ProgramData/openssl/ssl" )
-  set( ENGINESDIR "C:/ProgramData/openssl/engines-1.1" )
+  set( ENGINESDIR "C:/ProgramData/openssl/engines-3" )
+  set( MODULESDIR "C:/ProgramData/openssl/ossl-modules" )
 else()
-  if( DEFINED MY_LIB_BASE_PATH )
-    set( OPENSSLDIR "${MY_LIB_BASE_PATH}/ssl" )
-    set( ENGINESDIR "${MY_LIB_BASE_PATH}/engines-1.1" )
-  else()
-    set( OPENSSLDIR "${CMAKE_INSTALL_PREFIX}/ssl" )
-    set( ENGINESDIR "${CMAKE_INSTALL_PREFIX}/engines-1.1" )
-  endif()
+  set( OPENSSLDIR "${CMAKE_INSTALL_PREFIX}/ssl" )
+  set( ENGINESDIR "${CMAKE_INSTALL_PREFIX}/engines-3" )
+  set( MODULESDIR "${CMAKE_INSTALL_PREFIX}/ossl-modules" )
 endif()
 add_definitions( "-DOPENSSLDIR=\"${OPENSSLDIR}\"" )
 add_definitions( "-DENGINESDIR=\"${ENGINESDIR}\"" )
+add_definitions( "-DMODULESDIR=\"${MODULESDIR}\"" )
 
 if( APPLE )
   set( CMAKE_MACOSX_RPATH ON )
@@ -191,15 +154,79 @@ file( COPY ${PROJECT_SOURCE_DIR}/include/internal DESTINATION include )
 file( COPY ${PROJECT_SOURCE_DIR}/include/crypto DESTINATION include )
 file( COPY ${PROJECT_SOURCE_DIR}/include/openssl DESTINATION include )
 
-file( READ ${PROJECT_SOURCE_DIR}/opensslconf.h.cmake CONF )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/asn1.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/asn1.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/asn1t.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/asn1t.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/bio.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/bio.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/cmp.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/cmp.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/cms.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/cms.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/conf.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/conf.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/crmf.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/crmf.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/crypto.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/crypto.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/ct.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/ct.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/ess.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/ess.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/err.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/err.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/fipskey.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/fipskey.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/lhash.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/lhash.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/ocsp.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/ocsp.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/opensslv.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/opensslv.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/pkcs12.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/pkcs12.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/pkcs7.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/pkcs7.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/safestack.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/safestack.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/ssl.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/ssl.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/srp.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/srp.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/ui.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/ui.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/x509.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/x509.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/x509v3.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/x509v3.h )
+configure_file( ${PROJECT_SOURCE_DIR}/include/openssl/x509_vfy.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/x509_vfy.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_digests.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_digests.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_dsa.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_dsa.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_ec.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_ec.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_ecx.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_ecx.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_rsa.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_rsa.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_sm2.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_sm2.h )
+configure_file( ${PROJECT_SOURCE_DIR}/providers/common/include/prov/der_wrap.h.cmake
+  ${PROJECT_BINARY_DIR}/providers/common/include/prov/der_wrap.h )
+
+file( READ ${PROJECT_SOURCE_DIR}/include/openssl/configuration.h.cmake CONF )
 set( CONF "
-#define OPENSSL_NO_RFC3779
 #define OPENSSL_NO_EC_NISTP_64_GCC_128
 ${CONF}" )
 if( NOT OPENSSL_WITH_DEPRECATED_CIPHERS )
 set( CONF "
 #define OPENSSL_NO_MD2
 #define OPENSSL_NO_RC5
+#define OPENSSL_NO_SSL3
+#define OPENSSL_NO_SSL3_METHOD
 ${CONF}" )
 endif()
 if( OPENSSL_WITH_ZLIB AND ZLIB_FOUND )
@@ -207,10 +234,9 @@ set( CONF "
 #define ZLIB
 ${CONF}" )
 endif()
-file( WRITE ${PROJECT_BINARY_DIR}/opensslconf.h.cmake "${CONF}" )
-
-configure_file( ${PROJECT_BINARY_DIR}/opensslconf.h.cmake
-  ${PROJECT_BINARY_DIR}/include/openssl/opensslconf.h )
+file( WRITE ${PROJECT_BINARY_DIR}/include/openssl/configuration.h.cmake "${CONF}" )
+configure_file( ${PROJECT_BINARY_DIR}/include/openssl/configuration.h.cmake
+  ${PROJECT_BINARY_DIR}/include/openssl/configuration.h )
 # End configure public headers
 
 add_subdirectory(crypto)
@@ -238,7 +264,7 @@ file( GLOB PUBLIC_HEADERS "${PROJECT_BINARY_DIR}/include/openssl/*.h" )
 install( FILES ${PUBLIC_HEADERS} DESTINATION include/openssl )
 
 install( FILES
-  FAQ LICENSE README README.ENGINE
+  FAQ.md LICENSE.txt README.md README-ENGINES.md
   DESTINATION share/openssl )
 
 install( DIRECTORY doc DESTINATION share )

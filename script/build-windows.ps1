@@ -24,6 +24,9 @@ $TempInstallFolder = Join-Path -Path $TempRootFolder -ChildPath 'i'
 ##
 ## Project config
 ##
+####
+#### Project level config
+####
 $ProjectRevision = if ($Env:BUILD_NUMBER) {$Env:BUILD_NUMBER} else {'9999'}
 $ProjectShouldDisableCleanBuild = if ($Env:MY_PROJECT_SHOULD_DISABLE_CLEAN_BUILD) {$Env:MY_PROJECT_SHOULD_DISABLE_CLEAN_BUILD} else {'OFF'}
 $ProjectShouldDisable32BitBuild = if ($Env:MY_PROJECT_SHOULD_DISABLE_32BIT_BUILD) {$Env:MY_PROJECT_SHOULD_DISABLE_32BIT_BUILD} else {'OFF'}
@@ -33,11 +36,16 @@ $ProjectShouldDisableArm64ecBuild = if ($Env:MY_PROJECT_SHOULD_DISABLE_ARM64EC_B
 $ProjectShouldDisableX86Build = if ($Env:MY_PROJECT_SHOULD_DISABLE_X86_BUILD) {$Env:MY_PROJECT_SHOULD_DISABLE_X86_BUILD} else {'OFF'}
 $ProjectToolset = if ($Env:MY_PROJECT_CMAKE_TOOLSET) {$Env:MY_PROJECT_CMAKE_TOOLSET} else {'v142'}
 $ProjectReleaseType = if ($Env:MY_PROJECT_RELEASE_TYPE) {$Env:MY_PROJECT_RELEASE_TYPE} else {'Debug'}
+$ProjectWithOpenSSL111Preferred = if ($Env:MY_PROJECT_WITH_OPENSSL_1_1_1_PREFERRED) {$Env:MY_PROJECT_WITH_OPENSSL_1_1_1_PREFERRED} else {'OFF'}
+$ProjectWithOpenSSL30Preferred = if ($Env:MY_PROJECT_WITH_OPENSSL_3_0_PREFERRED) {$Env:MY_PROJECT_WITH_OPENSSL_3_0_PREFERRED} else {'OFF'}
 $ProjectWithSharedVcrt = if ($Env:MY_PROJECT_WITH_SHARED_VCRT) {$Env:MY_PROJECT_WITH_SHARED_VCRT} else {'OFF'}
 $ProjectWithStaticVcrt = if ($Env:MY_PROJECT_WITH_STATIC_VCRT) {$Env:MY_PROJECT_WITH_STATIC_VCRT} else {'ON'}
 $ProjectWithWorkaroundArm64rt = if ($Env:MY_PROJECT_WITH_WORKAROUND_ARM64RT) {$Env:MY_PROJECT_WITH_WORKAROUND_ARM64RT} else {'OFF'}
 $ProjectWithWorkaroundOptGy = if ($Env:MY_PROJECT_WITH_WORKAROUND_OPT_GY) {$Env:MY_PROJECT_WITH_WORKAROUND_OPT_GY} else {'OFF'}
 $ProjectWithWorkaroundSpectre = if ($Env:MY_PROJECT_WITH_WORKAROUND_SPECTRE) {$Env:MY_PROJECT_WITH_WORKAROUND_SPECTRE} else {'OFF'}
+####
+#### Project component level config
+####
 $ProjectOpenSslWithDeprecatedCiphers = if ($Env:MY_PROJECT_OPENSSL_WITH_DEPRECATED_CIPHERS) {$Env:MY_PROJECT_OPENSSL_WITH_DEPRECATED_CIPHERS} else {'OFF'}
 $ProjectOpenSslWithDisabledApps = if ($Env:MY_PROJECT_OPENSSL_WITH_DISABLED_APPS) {$Env:MY_PROJECT_OPENSSL_WITH_DISABLED_APPS} else {'OFF'}
 $ProjectOpenSslWithSharedLibraries = if ($Env:MY_PROJECT_OPENSSL_WITH_SHARED_LIBRARIES) {$Env:MY_PROJECT_OPENSSL_WITH_SHARED_LIBRARIES} else {'OFF'}
@@ -70,6 +78,12 @@ if ('ON'.Equals($ProjectOpenSslWithZlib)) {
 }
 if ('ON'.Equals($ProjectZlibWithDisabledTestApps)) {
     $MyCmakeCommonArgumentList += "-DZLIB_WITH_DISABLED_TEST_APPS=$ProjectZlibWithDisabledTestApps"
+}
+if ('ON'.Equals($ProjectWithOpenSSL111Preferred)) {
+    $MyCmakeCommonArgumentList += "-DBUILD_WITH_OPENSSL_1_1_1_PREFERRED=$ProjectWithOpenSSL111Preferred"
+}
+if ('ON'.Equals($ProjectWithOpenSSL30Preferred)) {
+    $MyCmakeCommonArgumentList += "-DBUILD_WITH_OPENSSL_3_0_PREFERRED=$ProjectWithOpenSSL30Preferred"
 }
 if ('ON'.Equals($ProjectWithSharedVcrt)) {
     $MyCmakeCommonArgumentList += "-DBUILD_WITH_SHARED_VCRT=$ProjectWithSharedVcrt"
@@ -139,12 +153,14 @@ Write-Information "[PowerShell] Project information: Disable clean build: $Proje
 Write-Information "[PowerShell] Project information: CMake generator: `"$MyCmakeGenerator`""
 Write-Information "[PowerShell] Project information: CMake toolset: `"$ProjectToolset`""
 Write-Information "[PowerShell] Project information: CMake platform to build: $MyCmakePlatformToBuildListString"
-Write-Information "[PowerShell] Project information: OpenSSL with deprecated ciphers: $ProjectOpenSslWithDeprecatedCiphers"
-Write-Information "[PowerShell] Project information: OpenSSL with disabled apps: $ProjectOpenSslWithDisabledApps"
-Write-Information "[PowerShell] Project information: OpenSSL with shared libraries: $ProjectOpenSslWithSharedLibraries"
-Write-Information "[PowerShell] Project information: OpenSSL with shared Zlib: $ProjectOpenSslWithSharedZlib"
-Write-Information "[PowerShell] Project information: OpenSSL with Zlib: $ProjectOpenSslWithZlib"
-Write-Information "[PowerShell] Project information: Zlib with disabled test apps: $ProjectZlibWithDisabledTestApps"
+Write-Information "[PowerShell] Project information: Preferred to use OpenSSL 1.1.1: $ProjectWithOpenSSL111Preferred"
+Write-Information "[PowerShell] Project information: Preferred to use OpenSSL 3.0: $ProjectWithOpenSSL30Preferred"
+Write-Information "[PowerShell] Component information: OpenSSL with deprecated ciphers: $ProjectOpenSslWithDeprecatedCiphers"
+Write-Information "[PowerShell] Component information: OpenSSL with disabled apps: $ProjectOpenSslWithDisabledApps"
+Write-Information "[PowerShell] Component information: OpenSSL with shared libraries: $ProjectOpenSslWithSharedLibraries"
+Write-Information "[PowerShell] Component information: OpenSSL with shared Zlib: $ProjectOpenSslWithSharedZlib"
+Write-Information "[PowerShell] Component information: OpenSSL with Zlib: $ProjectOpenSslWithZlib"
+Write-Information "[PowerShell] Component information: Zlib with disabled test apps: $ProjectZlibWithDisabledTestApps"
 
 
 
