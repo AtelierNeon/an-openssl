@@ -234,6 +234,11 @@ set( CONF "
 #define ZLIB
 ${CONF}" )
 endif()
+if( APPLE )
+set( CONF "
+#define OPENSSL_NO_KTLS
+${CONF}" )
+endif()
 file( WRITE ${PROJECT_BINARY_DIR}/include/openssl/configuration.h.cmake "${CONF}" )
 configure_file( ${PROJECT_BINARY_DIR}/include/openssl/configuration.h.cmake
   ${PROJECT_BINARY_DIR}/include/openssl/configuration.h )
