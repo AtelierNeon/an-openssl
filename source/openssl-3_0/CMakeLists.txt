@@ -234,7 +234,7 @@ set( CONF "
 #define ZLIB
 ${CONF}" )
 endif()
-if( APPLE )
+if( WIN32 OR APPLE )
 set( CONF "
 #define OPENSSL_NO_KTLS
 ${CONF}" )
