@@ -3,8 +3,8 @@
     "cmake.sourceDirectory": "${workspaceFolder}",
     "cmake.configureSettings": {
         "OPENSSL_WITH_DEPRECATED_CIPHERS": "ON",
-        "OPENSSL_WITH_DISABLED_APPS": "OFF",
         "OPENSSL_WITH_ZLIB": "ON",
+        "OPENSSL_WITHOUT_APPS": "OFF",
         "ZLIB_WITHOUT_TEST_APPS": "ON"
     }
 }
